@@ -1,23 +1,14 @@
-use game_of_life::{renderer::Renderer, runner::start, runner::RunnerOptions, state::State};
+use std::io;
 
-use terminal_size::{terminal_size, Height, Width};
+use game_of_life::{
+    runner::{self, RunnerOptions},
+    state::State,
+};
 
-fn main() {
-    let (Width(width), Height(height)) = terminal_size().unwrap();
-    let half_width = width as i32 / 2;
-    let half_height = height as i32 / 2;
+fn main() -> io::Result<()> {
+    let live_cells = [(2, 2), (2, 1), (2, 0), (1, 2), (0, 1)].as_ref();
 
-    let mut initial_state = State::new();
+    let initial_state = State::from(live_cells);
 
-    initial_state.put_cell(half_width - 1, half_height + 1);
-    initial_state.put_cell(half_width - 1, half_height);
-    initial_state.put_cell(half_width - 1, half_height - 1);
-    initial_state.put_cell(half_width, half_height + 1);
-    initial_state.put_cell(half_width + 1, half_height);
-
-    let renderer = Renderer::new();
-
-    let options = RunnerOptions::defaults();
-
-    start(&initial_state, &renderer, &options);
+    runner::start(&initial_state, &RunnerOptions::default())
 }

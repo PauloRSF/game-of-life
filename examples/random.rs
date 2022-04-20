@@ -1,17 +1,31 @@
-use game_of_life::{renderer::Renderer, runner::start, runner::RunnerOptions, state::State};
+use std::io;
 
+use itertools::Itertools;
+use rand::{prelude::SliceRandom, thread_rng};
 use terminal_size::{terminal_size, Height, Width};
 
-fn main() {
+use game_of_life::{
+    runner::{self, RunnerOptions},
+    state::State,
+    Cell,
+};
+
+fn main() -> io::Result<()> {
     let (Width(width), Height(height)) = terminal_size().unwrap();
 
-    let live_cell_count = (width * height) / 6;
+    let mut cells = (0..width as i32)
+        .cartesian_product(0..height as i32)
+        .collect::<Vec<Cell>>();
 
-    let initial_state = State::new_randomized(live_cell_count.into());
+    cells.shuffle(&mut thread_rng());
 
-    let renderer = Renderer::new();
+    let live_cells = cells
+        .iter()
+        .cloned()
+        .take(((width * height) / 6).into()) // Fill 1/6 of the terminal area
+        .collect_vec();
 
-    let options = RunnerOptions::defaults();
+    let initial_state = State::from(live_cells.as_ref());
 
-    start(&initial_state, &renderer, &options);
+    runner::start(&initial_state, &RunnerOptions::default())
 }
